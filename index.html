@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Platform Pembelajaran SQL - Dr. D</title>
-    <script src="[https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js](https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js)"></script>
-    <script src="[https://cdn.jsdelivr.net/npm/marked/marked.min.js](https://cdn.jsdelivr.net/npm/marked/marked.min.js)"></script>
+    <!-- MENGGUNAKAN SERVER UNPKG SEBAGAI CADANGAN ANTI-BLOKIR -->
+    <script src="https://unpkg.com/sql.js@1.8.0/dist/sql-wasm.js"></script>
+    <script src="https://unpkg.com/marked@4.3.0/marked.min.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -300,4 +301,730 @@
         const setupKotaQuery = "CREATE TABLE Kota_Kampus (kota varchar, negara varchar, populasi_mahasiswa int, latitude float, longitude float); INSERT INTO Kota_Kampus VALUES ('Malang', 'Indonesia', 1500800, 20.659699, -103.349609), ('Surabaya', 'Indonesia', 2795060, 43.653226, -79.383184), ('Jakarta', 'Indonesia', 2195914, 29.760427, -95.369803), ('Bandung', 'Indonesia', 8405837, 40.712784, -74.005941), ('Yogyakarta', 'Indonesia', 1553165, 39.952584, -75.165222), ('Kuala Lumpur', 'Malaysia', 2106146, 23.05407, -82.345189), ('Penang', 'Malaysia', 8555500, 19.432608, -99.133208), ('Tokyo', 'Jepang', 1513367, 33.448377, -112.074037), ('Kyoto', 'Jepang', 3884307, 34.052234, -118.243685), ('Osaka', 'Jepang', 1742000, 19.601841, -99.050674), ('Seoul', 'Korea Selatan', 1717767, 45.501689, -73.567256), ('Busan', 'Korea Selatan', 2718782, 41.878114, -87.629798);";
         const setupJoinQuery = setupQuery + "CREATE TABLE Luaran_Publikasi (id_penelitian int, skor_kualitas float, sitasi_nasional int, sitasi_internasional int); INSERT INTO Luaran_Publikasi VALUES (5, 8.2, 380, 555), (14, 7.4, 268, 475), (8, 8, 206, 417), (12, 6.4, 191, 368), (3, 7.9, 245, 239), (6, 8, 261, 370), (9, 8.5, 223, 297), (11, 8.4, 415, 648), (1, 8.3, 191, 170), (7, 7.2, 244, 217), (10, 8.3, 293, 438), (4, 8.1, 289, 272), (2, 7.2, 162, 200), (13, 7.2, 237, 301);";
         const setupOuterJoinQuery = "CREATE TABLE Fakultas (nama_fakultas varchar, kapasitas_dosen int); INSERT INTO Fakultas VALUES ('Fakultas Ilmu Komputer', 24), ('Fakultas Bisnis', 32), ('Fakultas Teknik', 16), ('Fakultas Bahasa', 20); CREATE TABLE Dosen (jabatan varchar, nama varchar, fakultas varchar, lama_mengabdi int); INSERT INTO Dosen VALUES ('Asisten Profesor', 'Dr. D', 'Fakultas Ilmu Komputer', 4), ('Asisten Profesor', 'Dan B.', 'Fakultas Ilmu Komputer', 2), ('Asisten Profesor', 'Sharon F.', 'Fakultas Ilmu Komputer', 6), ('Asisten Profesor', 'Dan M.', 'Fakultas Ilmu Komputer', 4), ('Asisten Profesor', 'Malcom S.', 'Fakultas Ilmu Komputer', 1), ('Lektor', 'Tylar S.', 'Fakultas Bahasa', 2), ('Lektor', 'Sherman D.', 'Fakultas Bahasa', 8), ('Lektor', 'Jakob J.', 'Fakultas Bahasa', 6), ('Lektor', 'Lillia A.', 'Fakultas Bahasa', 7), ('Lektor', 'Brandon J.', 'Fakultas Bahasa', 7), ('Guru Besar', 'Prof. Aji', 'Fakultas Ilmu Komputer', 9), ('Guru Besar', 'Shirlee M.', 'Fakultas Ilmu Komputer', 3), ('Guru Besar', 'Daria O.', 'Fakultas Bahasa', 6);";
-        const setupNull
+        const setupNullQuery = setupOuterJoinQuery + "INSERT INTO Dosen VALUES ('Asisten Profesor', 'Yancy I.', NULL, NULL), ('Lektor', 'Oliver P.', NULL, NULL);";
+
+        // --- DATASET & MATERI ---
+        const lessons = [
+            {
+                id: "intro",
+                title: "Pengantar SQL",
+                hasEditor: false,
+                content: `
+### Pengantar SQL
+
+Selamat datang! Ini adalah rangkaian pelajaran dan latihan interaktif yang dirancang untuk membantu Anda belajar SQL dengan cepat, langsung di dalam <i>browser</i> Anda.
+
+#### Apa itu SQL?
+SQL, atau <i>Structured Query Language</i>, adalah bahasa yang dirancang untuk memungkinkan pengguna teknis maupun non-teknis melakukan kueri, memanipulasi, dan mentransformasi data dari sebuah database relasional. 
+
+**Tahukah Anda?**
+Ada banyak database SQL populer termasuk SQLite, MySQL, Postgres, Oracle, dan Microsoft SQL Server. Semuanya mendukung standar bahasa SQL secara umum, yang merupakan materi yang akan diajarkan di situs ini.
+
+#### Database Relasional
+Sebelum mempelajari sintaks SQL, penting untuk memiliki gambaran mengenai apa sebenarnya database relasional itu. Database relasional merepresentasikan kumpulan tabel (dua dimensi) yang saling terkait. Setiap tabel mirip dengan lembar kerja (<i>spreadsheet</i>) Excel, dengan jumlah kolom bernama yang tetap.
+
+Sebagai contoh, jika sebuah kampus memiliki database, Anda mungkin akan menemukan tabel yang berisi daftar riwayat penelitian. Tabel ini misalnya perlu menyimpan nama judul riset, ketua peneliti, tahun pelaksanaan, dan durasinya.
+
+#### Tentang Pelajaran Ini
+Setiap pelajaran akan memperkenalkan konsep yang berbeda dan diakhiri dengan latihan interaktif. Progres Anda akan **disimpan secara otomatis**, sehingga Anda dapat melanjutkannya kapan saja!
+
+*(Silakan klik **Modul 1** di sidebar kiri untuk mulai menulis kueri pertama Anda!)*
+                `
+            },
+            {
+                id: "lesson1",
+                title: "Modul 1: Dasar Kueri SELECT",
+                hasEditor: true,
+                setupDb: setupQuery,
+                defaultQuery: "SELECT * FROM Penelitian;",
+                content: `
+### Modul 1: Dasar Kueri SELECT
+
+Untuk mengambil data dari database SQL, kita perlu menulis pernyataan **SELECT**, yang sering disebut sebagai <i>kueri</i> (query). Kueri pada dasarnya adalah pernyataan yang mendeklarasikan data apa yang kita cari, di mana menemukannya, dan bagaimana mentransformasikannya sebelum dikembalikan.
+
+Kueri paling dasar yang bisa kita tulis adalah kueri yang memilih beberapa kolom dari sebuah tabel:
+
+**Kueri memilih kolom tertentu:**
+~~~sql
+SELECT kolom1, kolom2 FROM nama_tabel;
+~~~
+
+Jika kita ingin mengambil <i>semua</i> kolom dari sebuah tabel, kita dapat menggunakan simbol bintang.
+**Kueri memilih semua kolom:**
+~~~sql
+SELECT * FROM nama_tabel;
+~~~
+
+---
+#### Latihan Interaktif
+Kita akan menggunakan database berisi data **Penelitian Kampus**. Tabel yang digunakan bernama <code>Penelitian</code>. Silakan ubah kueri di editor bawah untuk menyelesaikan tugas-tugas di panel sebelah kanan!
+                `,
+                tasks: [
+                    { text: "Temukan judul (Judul) dari setiap penelitian", expected: "SELECT Judul FROM Penelitian;" },
+                    { text: "Temukan ketua peneliti (Ketua_Peneliti) dari setiap penelitian", expected: "SELECT Ketua_Peneliti FROM Penelitian;" },
+                    { text: "Temukan judul dan ketua peneliti dari setiap penelitian", expected: "SELECT Judul, Ketua_Peneliti FROM Penelitian;" },
+                    { text: "Temukan judul dan tahun (Tahun) dari setiap penelitian", expected: "SELECT Judul, Tahun FROM Penelitian;" },
+                    { text: "Temukan semua informasi tentang setiap penelitian", expected: "SELECT * FROM Penelitian;" }
+                ]
+            },
+            {
+                id: "lesson2",
+                title: "Modul 2: Kueri dengan Batasan (Pt. 1)",
+                hasEditor: true,
+                setupDb: setupQuery,
+                defaultQuery: "SELECT * FROM Penelitian;",
+                content: `
+### Modul 2: Kueri dengan Batasan (Bagian 1)
+
+Sekarang kita tahu cara memilih kolom tertentu dari sebuah tabel. Tetapi jika Anda memiliki tabel dengan jutaan baris data, membaca seluruh baris tersebut akan sangat tidak efisien.
+
+Untuk memfilter agar hanya hasil tertentu saja yang dikembalikan, kita perlu menggunakan klausa **WHERE** dalam kueri. Klausa ini diterapkan pada setiap baris data dengan memeriksa nilai kolom tertentu.
+
+**Kueri SELECT dengan batasan (kondisi):**
+~~~sql
+SELECT kolom, kolom_lain 
+FROM nama_tabel 
+WHERE kondisi 
+      AND/OR kondisi_lain;
+~~~
+
+Berikut adalah beberapa operator berguna yang dapat Anda gunakan untuk data numerik:
+<ul>
+<li><code>=</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code> (Operator standar)</li>
+<li><code>BETWEEN ... AND ...</code> (Angka berada di rentang inklusif)</li>
+<li><code>NOT BETWEEN ... AND ...</code></li>
+<li><code>IN (...)</code> (Angka ada di dalam sebuah daftar, misal: <code>kolom IN (2, 4, 6)</code>)</li>
+</ul>
+                `,
+                tasks: [
+                    { text: "Temukan penelitian dengan baris Id bernilai 6", expected: "SELECT * FROM Penelitian WHERE Id = 6;" },
+                    { text: "Temukan penelitian yang dilaksanakan pada tahun antara 2020 dan 2030", expected: "SELECT * FROM Penelitian WHERE Tahun BETWEEN 2020 AND 2030;" },
+                    { text: "Temukan penelitian yang tidak dilaksanakan pada tahun antara 2020 dan 2030", expected: "SELECT * FROM Penelitian WHERE Tahun NOT BETWEEN 2020 AND 2030;" },
+                    { text: "Temukan 5 penelitian pertama (Id 1 sampai 5) dan tahun pelaksanaannya", expected: "SELECT Judul, Tahun FROM Penelitian WHERE Id <= 5;" }
+                ]
+            },
+            {
+                id: "lesson3",
+                title: "Modul 3: Kueri dengan Batasan (Pt. 2)",
+                hasEditor: true,
+                setupDb: setupQuery,
+                defaultQuery: "SELECT * FROM Penelitian;",
+                content: `
+### Modul 3: Kueri dengan Batasan (Bagian 2)
+
+Saat menulis klausa WHERE dengan kolom yang berisi data teks, SQL mendukung sejumlah operator yang berguna untuk melakukan hal-hal seperti perbandingan string tanpa memperhatikan besar/kecil huruf (case-insensitive) dan pencocokan pola menggunakan karakter <i>wildcard</i>. 
+
+<ul>
+<li><code>=</code> atau <code>!=</code> (Sama persis atau tidak sama)</li>
+<li><code>LIKE</code> atau <code>NOT LIKE</code> (Perbandingan string case insensitive)</li>
+<li><code>%</code> (Digunakan dengan LIKE untuk mencocokkan urutan karakter apa pun. Contoh: <code>LIKE "%AT%"</code>)</li>
+<li><code>_</code> (Digunakan dengan LIKE untuk mencocokkan tepat satu karakter. Contoh: <code>LIKE "AN_"</code>)</li>
+</ul>
+
+**Tahukah Anda?**
+Semua string teks harus diapit dengan tanda kutip tunggal atau ganda agar <i>parser</i> kueri dapat mengenalinya.
+                `,
+                tasks: [
+                    { text: "Temukan semua penelitian yang memiliki kata 'Deteksi' di Judul", expected: "SELECT * FROM Penelitian WHERE Judul LIKE '%Deteksi%';" },
+                    { text: "Temukan semua penelitian yang diketuai oleh Dr. D", expected: "SELECT * FROM Penelitian WHERE Ketua_Peneliti = 'Dr. D';" },
+                    { text: "Temukan semua penelitian (dan ketua penelitinya) yang TIDAK diketuai oleh Dr. D", expected: "SELECT Judul, Ketua_Peneliti FROM Penelitian WHERE Ketua_Peneliti != 'Dr. D';" },
+                    { text: "Temukan semua penelitian yang judulnya berakhiran dengan kata 'Dataset'", expected: "SELECT * FROM Penelitian WHERE Judul LIKE '%Dataset';" }
+                ]
+            },
+            {
+                id: "lesson4",
+                title: "Modul 4: Memfilter & Mengurutkan",
+                hasEditor: true,
+                setupDb: setupQuery,
+                defaultQuery: "SELECT * FROM Penelitian;",
+                content: `
+### Modul 4: Memfilter dan Mengurutkan Hasil Kueri
+
+SQL menyediakan cara yang mudah untuk membuang baris duplikat dengan menggunakan kata kunci **DISTINCT**.
+
+**Kueri SELECT dengan hasil unik**
+~~~sql
+SELECT DISTINCT kolom, kolom_lain FROM nama_tabel;
+~~~
+
+**Mengurutkan hasil**
+SQL menyediakan cara untuk mengurutkan hasil Anda berdasarkan kolom tertentu dalam urutan menaik (<i>ascending</i>) atau menurun (<i>descending</i>) menggunakan klausa **ORDER BY**.
+
+**Kueri SELECT dengan hasil yang diurutkan & dibatasi**
+Klausa lain yang sering digunakan adalah **LIMIT** (membatasi jumlah baris) dan **OFFSET** (menentukan dari mana mulai menghitung).
+
+~~~sql
+SELECT kolom FROM nama_tabel 
+ORDER BY kolom ASC/DESC 
+LIMIT batas_jumlah OFFSET jumlah_offset;
+~~~
+                `,
+                tasks: [
+                    { text: "Daftar semua ketua peneliti (secara alfabetis), tanpa duplikat", expected: "SELECT DISTINCT Ketua_Peneliti FROM Penelitian ORDER BY Ketua_Peneliti ASC;" },
+                    { text: "Daftar empat penelitian terbaru yang dirilis (diurutkan dari yang paling baru ke yang paling lama)", expected: "SELECT * FROM Penelitian ORDER BY Tahun DESC LIMIT 4;" },
+                    { text: "Daftar lima penelitian pertama diurutkan secara alfabetis berdasarkan Judul", expected: "SELECT * FROM Penelitian ORDER BY Judul ASC LIMIT 5;" },
+                    { text: "Daftar lima penelitian berikutnya (setelah 5 pertama) diurutkan secara alfabetis berdasarkan Judul", expected: "SELECT * FROM Penelitian ORDER BY Judul ASC LIMIT 5 OFFSET 5;" }
+                ]
+            },
+            {
+                id: "lesson5",
+                title: "Modul 5: Review Kueri SELECT",
+                hasEditor: true,
+                setupDb: setupKotaQuery,
+                defaultQuery: "SELECT * FROM Kota_Kampus;",
+                content: `
+### Modul 5: Review Kueri SELECT
+
+Anda telah melakukan pekerjaan yang baik untuk sampai ke titik ini! Sekarang setelah Anda merasakan cara menulis kueri dasar, Anda perlu berlatih menulis kueri yang menyelesaikan masalah aktual.
+
+**Latihan**
+Pada latihan di bawah ini, Anda akan bekerja dengan tabel **Kota_Kampus** yang berisi informasi tentang beberapa kota kampus terbesar di Asia, termasuk populasi mahasiswa dan lokasi geospasialnya di dunia.
+
+Cobalah dan tulis beberapa kueri untuk menemukan informasi yang diminta dalam tugas-tugas di bawah ini dengan menggabungkan WHERE, ORDER BY, dan LIMIT.
+                `,
+                tasks: [
+                    { text: "Daftar semua kota kampus di Indonesia dan populasi mahasiswanya", expected: "SELECT kota, populasi_mahasiswa FROM Kota_Kampus WHERE negara = 'Indonesia';" },
+                    { text: "Urutkan semua kota di Jepang berdasarkan latitude-nya dari utara (tertinggi) ke selatan (terendah)", expected: "SELECT * FROM Kota_Kampus WHERE negara = 'Jepang' ORDER BY latitude DESC;" },
+                    { text: "Daftar semua kota di sebelah barat Tokyo (longitude lebih kecil dari Tokyo), diurutkan dari barat ke timur", expected: "SELECT * FROM Kota_Kampus WHERE longitude < -112.074037 ORDER BY longitude ASC;" },
+                    { text: "Daftar dua kota terbesar di Malaysia (berdasarkan populasi_mahasiswa)", expected: "SELECT * FROM Kota_Kampus WHERE negara = 'Malaysia' ORDER BY populasi_mahasiswa DESC LIMIT 2;" },
+                    { text: "Daftar kota terbesar ketiga dan keempat (berdasarkan populasi_mahasiswa) di Indonesia dan populasi mereka", expected: "SELECT kota, populasi_mahasiswa FROM Kota_Kampus WHERE negara = 'Indonesia' ORDER BY populasi_mahasiswa DESC LIMIT 2 OFFSET 2;" }
+                ]
+            },
+            {
+                id: "lesson6",
+                title: "Modul 6: Kueri Multi-tabel JOIN",
+                hasEditor: true,
+                setupDb: setupJoinQuery,
+                defaultQuery: "SELECT * FROM Penelitian;",
+                content: `
+### Modul 6: Kueri Multi-tabel dengan JOINs
+
+Data entitas di dunia nyata sering kali dipecah menjadi beberapa bagian dan disimpan di beberapa tabel ortogonal menggunakan proses yang dikenal sebagai normalisasi.
+
+Menggunakan klausa **JOIN** dalam kueri, kita dapat menggabungkan data baris dari dua tabel terpisah menggunakan kunci unik. Yang pertama dari join yang akan kita perkenalkan adalah **INNER JOIN**.
+
+**Kueri SELECT dengan INNER JOIN pada beberapa tabel**
+~~~sql
+SELECT kolom, kolom_tabel_lain
+FROM tabel_saya
+INNER JOIN tabel_lain 
+    ON tabel_saya.id = tabel_lain.id
+WHERE kondisi;
+~~~
+
+INNER JOIN adalah proses yang mencocokkan baris dari tabel pertama dan tabel kedua yang memiliki kunci yang sama.
+                `,
+                tasks: [
+                    { text: "Temukan sitasi_nasional dan sitasi_internasional untuk setiap penelitian (gabungkan tabel Penelitian dan Luaran_Publikasi menggunakan Id = id_penelitian)", expected: "SELECT Penelitian.Judul, Luaran_Publikasi.sitasi_nasional, Luaran_Publikasi.sitasi_internasional FROM Penelitian INNER JOIN Luaran_Publikasi ON Penelitian.Id = Luaran_Publikasi.id_penelitian;" },
+                    { text: "Tampilkan angka sitasi untuk setiap penelitian yang lebih baik secara internasional daripada nasional", expected: "SELECT Penelitian.Judul, Luaran_Publikasi.sitasi_nasional, Luaran_Publikasi.sitasi_internasional FROM Penelitian INNER JOIN Luaran_Publikasi ON Penelitian.Id = Luaran_Publikasi.id_penelitian WHERE Luaran_Publikasi.sitasi_internasional > Luaran_Publikasi.sitasi_nasional;" },
+                    { text: "Daftar semua penelitian berdasarkan skor_kualitas mereka dalam urutan menurun", expected: "SELECT Penelitian.Judul, Luaran_Publikasi.skor_kualitas FROM Penelitian INNER JOIN Luaran_Publikasi ON Penelitian.Id = Luaran_Publikasi.id_penelitian ORDER BY Luaran_Publikasi.skor_kualitas DESC;" }
+                ]
+            },
+            {
+                id: "lesson7",
+                title: "Modul 7: OUTER JOINs",
+                hasEditor: true,
+                setupDb: setupOuterJoinQuery,
+                defaultQuery: "SELECT * FROM Dosen;",
+                content: `
+### Modul 7: OUTER JOINs
+
+INNER JOIN yang kita gunakan pada pelajaran terakhir mungkin tidak cukup karena tabel yang dihasilkan hanya berisi data yang *ada di kedua tabel tersebut*.
+
+Jika kedua tabel memiliki data asimetris, maka kita harus menggunakan **LEFT JOIN**, **RIGHT JOIN**, atau **FULL JOIN** untuk memastikan bahwa data yang Anda perlukan tidak tertinggal.
+
+**Kueri SELECT dengan LEFT/RIGHT/FULL JOINs**
+~~~sql
+SELECT kolom, kolom_lain
+FROM tabel_saya
+LEFT JOIN tabel_lain 
+    ON tabel_saya.id = tabel_lain.id_cocok;
+~~~
+
+<ul>
+<li>**LEFT JOIN** menyertakan baris dari tabel utama (kiri) terlepas dari apakah baris yang cocok ditemukan di tabel kanan.</li>
+<li>**RIGHT JOIN** adalah hal yang sama, tetapi dibalik.</li>
+</ul>
+
+*(Catatan: Karena keterbatasan database SQL browser kita, hanya LEFT JOIN yang didukung dalam latihan di bawah ini).*
+                `,
+                tasks: [
+                    { text: "Temukan daftar semua Fakultas yang memiliki Dosen (gunakan INNER JOIN)", expected: "SELECT DISTINCT Fakultas.nama_fakultas FROM Fakultas INNER JOIN Dosen ON Fakultas.nama_fakultas = Dosen.fakultas;" },
+                    { text: "Temukan daftar semua Fakultas dan kapasitas dosennya", expected: "SELECT * FROM Fakultas;" },
+                    { text: "Daftar semua Fakultas dan berbagai jabatan Dosen di setiap fakultas (termasuk fakultas yang kosong, gunakan LEFT JOIN dengan tabel utama Fakultas)", expected: "SELECT Fakultas.nama_fakultas, Dosen.jabatan FROM Fakultas LEFT JOIN Dosen ON Fakultas.nama_fakultas = Dosen.fakultas;" }
+                ]
+            },
+            {
+                id: "lesson8",
+                title: "Modul 8: Penanganan NULLs",
+                hasEditor: true,
+                setupDb: setupNullQuery,
+                defaultQuery: "SELECT * FROM Dosen;",
+                content: `
+### Modul 8: Catatan Singkat tentang NULLs
+
+Selalu baik untuk mengurangi kemungkinan nilai **NULL** dalam database karena mereka membutuhkan perhatian khusus saat menyusun kueri dan batasan.
+
+Namun, jika database Anda perlu menyimpan data yang tidak lengkap, maka nilai NULL mungkin tepat. Kadang-kadang juga tidak mungkin untuk menghindari nilai NULL saat melakukan Outer Join. Dalam kasus ini, Anda dapat menguji kolom untuk nilai NULL dalam klausa WHERE dengan menggunakan batasan **IS NULL** atau **IS NOT NULL**.
+
+**Kueri SELECT dengan batasan pada nilai NULL**
+~~~sql
+SELECT kolom
+FROM tabel_saya
+WHERE kolom IS NULL;
+~~~
+                `,
+                tasks: [
+                    { text: "Temukan nama dan jabatan dari semua dosen yang belum ditugaskan ke sebuah fakultas (fakultas IS NULL)", expected: "SELECT nama, jabatan FROM Dosen WHERE fakultas IS NULL;" },
+                    { text: "Temukan nama dari fakultas yang tidak menampung dosen sama sekali (gunakan LEFT JOIN dan IS NULL pada kolom nama Dosen)", expected: "SELECT Fakultas.nama_fakultas FROM Fakultas LEFT JOIN Dosen ON Fakultas.nama_fakultas = Dosen.fakultas WHERE Dosen.nama IS NULL;" }
+                ]
+            },
+            {
+                id: "lesson9",
+                title: "Modul 9: Kueri dengan Ekspresi",
+                hasEditor: true,
+                setupDb: setupJoinQuery,
+                defaultQuery: "SELECT * FROM Luaran_Publikasi;",
+                content: `
+### Modul 9: Kueri dengan Ekspresi
+
+Selain melakukan kueri kolom mentah, Anda juga dapat menggunakan **ekspresi** untuk menulis logika aritmatika dasar untuk mengubah nilai saat kueri dieksekusi.
+
+**Contoh kueri dengan ekspresi**
+~~~sql
+SELECT particle_speed / 2.0 AS half_particle_speed
+FROM physics_data
+WHERE ABS(particle_position) * 10.0 > 500;
+~~~
+
+Sangat disarankan bahwa saat ekspresi digunakan, mereka juga diberi alias deskriptif menggunakan kata kunci **AS** agar kolom hasil lebih mudah dibaca.
+                `,
+                tasks: [
+                    { text: "Daftar semua penelitian (Judul) dan total sitasi gabungan mereka (sitasi_nasional + sitasi_internasional) AS total_sitasi", expected: "SELECT Penelitian.Judul, (Luaran_Publikasi.sitasi_nasional + Luaran_Publikasi.sitasi_internasional) AS total_sitasi FROM Penelitian INNER JOIN Luaran_Publikasi ON Penelitian.Id = Luaran_Publikasi.id_penelitian;" },
+                    { text: "Daftar semua penelitian (Judul) dan skor kualitas mereka dalam bentuk persen (skor_kualitas * 10) AS persen_skor", expected: "SELECT Penelitian.Judul, (Luaran_Publikasi.skor_kualitas * 10) AS persen_skor FROM Penelitian INNER JOIN Luaran_Publikasi ON Penelitian.Id = Luaran_Publikasi.id_penelitian;" },
+                    { text: "Daftar semua penelitian yang dirilis pada tahun genap (Tahun % 2 = 0)", expected: "SELECT * FROM Penelitian WHERE Tahun % 2 = 0;" }
+                ]
+            },
+            {
+                id: "lesson10",
+                title: "Modul 10: Agregasi (Pt. 1)",
+                hasEditor: true,
+                setupDb: setupOuterJoinQuery,
+                defaultQuery: "SELECT * FROM Dosen;",
+                content: `
+### Modul 10: Kueri dengan Agregat (Bagian 1)
+
+SQL mendukung penggunaan ekspresi agregat (fungsi) yang memungkinkan Anda merangkum informasi tentang sekumpulan baris data. 
+
+<ul>
+<li><code>COUNT()</code>: Menghitung jumlah baris dalam grup.</li>
+<li><code>MIN(kolom)</code> / <code>MAX(kolom)</code>: Menemukan nilai numerik terkecil / terbesar.</li>
+<li><code>AVG(kolom)</code>: Menemukan nilai rata-rata.</li>
+<li><code>SUM(kolom)</code>: Menemukan jumlah (total) dari semua nilai.</li>
+</ul>
+
+**Kueri SELECT dengan fungsi agregat pada grup**
+Selain menggabungkan di seluruh baris, Anda dapat menerapkan fungsi agregat ke sub-grup data menggunakan klausa **GROUP BY**.
+
+~~~sql
+SELECT FUNGSI_AGREGAT(kolom) AS alias
+FROM tabel_saya
+GROUP BY kolom;
+~~~
+                `,
+                tasks: [
+                    { text: "Temukan waktu terlama (MAX) seorang dosen mengabdi di kampus (lama_mengabdi)", expected: "SELECT MAX(lama_mengabdi) FROM Dosen;" },
+                    { text: "Untuk setiap jabatan, temukan rata-rata (AVG) jumlah tahun mengabdi oleh dosen dalam jabatan tersebut (GROUP BY jabatan)", expected: "SELECT jabatan, AVG(lama_mengabdi) FROM Dosen GROUP BY jabatan;" },
+                    { text: "Temukan total jumlah (SUM) tahun dosen bekerja di setiap fakultas (GROUP BY fakultas)", expected: "SELECT fakultas, SUM(lama_mengabdi) FROM Dosen GROUP BY fakultas;" }
+                ]
+            },
+            {
+                id: "lesson11",
+                title: "Modul 11: Agregasi (Pt. 2)",
+                hasEditor: true,
+                setupDb: setupOuterJoinQuery,
+                defaultQuery: "SELECT * FROM Dosen;",
+                content: `
+### Modul 11: Kueri dengan Agregat (Bagian 2)
+
+Bagaimana tepatnya kita memfilter baris yang sudah dikelompokkan oleh GROUP BY?
+
+SQL memungkinkan kita melakukan ini dengan menambahkan klausa **HAVING** yang digunakan khusus dengan klausa GROUP BY.
+
+**Kueri SELECT dengan batasan HAVING**
+~~~sql
+SELECT kolom_group_by, COUNT(kolom) AS alias_hasil
+FROM tabel_saya
+GROUP BY kolom_group_by
+HAVING kondisi_grup;
+~~~
+
+Batasan klausa HAVING ditulis dengan cara yang sama seperti klausa WHERE, tetapi ia bekerja pada hasil yang telah diagregasi.
+                `,
+                tasks: [
+                    { text: "Temukan jumlah (COUNT) Asisten Profesor (jabatan = 'Asisten Profesor') di kampus", expected: "SELECT COUNT(*) FROM Dosen WHERE jabatan = 'Asisten Profesor';" },
+                    { text: "Temukan jumlah (COUNT) Dosen untuk setiap jabatan (GROUP BY jabatan) di kampus", expected: "SELECT jabatan, COUNT(*) FROM Dosen GROUP BY jabatan;" },
+                    { text: "Temukan total jumlah tahun mengabdi (SUM(lama_mengabdi)) oleh semua Guru Besar", expected: "SELECT SUM(lama_mengabdi) FROM Dosen WHERE jabatan = 'Guru Besar';" }
+                ]
+            },
+            {
+                id: "lesson12",
+                title: "Modul 12: Urutan Eksekusi",
+                hasEditor: true,
+                setupDb: setupJoinQuery,
+                defaultQuery: "SELECT * FROM Penelitian;",
+                content: `
+### Modul 12: Urutan Eksekusi dari Kueri
+
+Karena setiap bagian dari kueri dieksekusi secara berurutan di balik layar, penting untuk memahami urutan aslinya:
+
+<ol>
+<li>**FROM dan JOINs**: Menentukan kumpulan data kerja total.</li>
+<li>**WHERE**: Memfilter baris individu.</li>
+<li>**GROUP BY**: Mengelompokkan baris berdasarkan nilai umum.</li>
+<li>**HAVING**: Memfilter baris yang dikelompokkan.</li>
+<li>**SELECT**: Ekspresi akhirnya dihitung.</li>
+<li>**DISTINCT**: Membuang nilai duplikat.</li>
+<li>**ORDER BY**: Mengurutkan hasil akhir.</li>
+<li>**LIMIT / OFFSET**: Memotong baris sesuai batas.</li>
+</ol>
+                `,
+                tasks: [
+                    { text: "Temukan jumlah penelitian (COUNT) yang diarahkan oleh masing-masing Ketua_Peneliti (GROUP BY Ketua_Peneliti)", expected: "SELECT Ketua_Peneliti, COUNT(*) FROM Penelitian GROUP BY Ketua_Peneliti;" },
+                    { text: "Temukan total (SUM) sitasi nasional dan internasional gabungan (sitasi_nasional + sitasi_internasional) yang dapat diatribusikan ke masing-masing Ketua_Peneliti", expected: "SELECT Penelitian.Ketua_Peneliti, SUM(Luaran_Publikasi.sitasi_nasional + Luaran_Publikasi.sitasi_internasional) FROM Penelitian INNER JOIN Luaran_Publikasi ON Penelitian.Id = Luaran_Publikasi.id_penelitian GROUP BY Penelitian.Ketua_Peneliti;" }
+                ]
+            },
+            {
+                id: "lesson13",
+                title: "Modul 13: Menyisipkan (INSERT)",
+                hasEditor: true,
+                setupDb: setupQuery,
+                defaultQuery: "SELECT * FROM Penelitian;",
+                content: `
+### Modul 13: Menyisipkan Baris Baru
+
+Saat menyisipkan data ke dalam database, kita menggunakan pernyataan **INSERT**, yang mendeklarasikan tabel mana yang akan ditulis, kolom data yang kita isi, dan baris data untuk disisipkan. 
+
+**Pernyataan Insert dengan nilai untuk semua kolom**
+~~~sql
+INSERT INTO nama_tabel
+VALUES (nilai, nilai_lain, …);
+~~~
+
+**Pernyataan Insert dengan kolom tertentu**
+~~~sql
+INSERT INTO nama_tabel (kolom, kolom_lain, …)
+VALUES (nilai, nilai_lain, …);
+~~~
+                `,
+                tasks: [
+                    { text: "Tambahkan penelitian baru, 'Penerapan Sistem PINTAS 2.0' (Tahun 2026, Durasi 12) dengan 'Dr. D' sebagai Ketua Penelitinya ke tabel Penelitian", expected: "INSERT INTO Penelitian (Id, Judul, Ketua_Peneliti, Tahun, Durasi_Bulan) VALUES (88, 'Penerapan Sistem PINTAS 2.0', 'Dr. D', 2026, 12);" }
+                ]
+            },
+            {
+                id: "lesson14",
+                title: "Modul 14: Memperbarui (UPDATE)",
+                hasEditor: true,
+                setupDb: setupQuery,
+                defaultQuery: "SELECT * FROM Penelitian;",
+                content: `
+### Modul 14: Memperbarui Baris
+
+Memperbarui data yang ada dapat dilakukan menggunakan pernyataan **UPDATE**. 
+
+**Pernyataan Update dengan nilai**
+~~~sql
+UPDATE nama_tabel
+SET kolom = nilai_atau_ekspresi
+WHERE kondisi;
+~~~
+
+**Berhati-hatilah!**
+Jika Anda tidak sengaja meninggalkan klausa WHERE, hal ini akan menyebabkan pembaruan berlaku untuk **SEMUA BARIS**. Selalu tulis batasan terlebih dahulu.
+                `,
+                tasks: [
+                    { text: "Tahun untuk penelitian 'Deteksi Wajah Multi-Face YOLOv8' salah, sebenarnya tahun 2024. Perbarui data tersebut!", expected: "UPDATE Penelitian SET Tahun = 2024 WHERE Judul = 'Deteksi Wajah Multi-Face YOLOv8';" },
+                    { text: "Ketua Peneliti untuk 'MongoDB di Dunia Nyata' sebenarnya bukan Prof. Aji, melainkan Dr. D. Perbarui!", expected: "UPDATE Penelitian SET Ketua_Peneliti = 'Dr. D' WHERE Judul = 'MongoDB di Dunia Nyata';" }
+                ]
+            },
+            {
+                id: "lesson15",
+                title: "Modul 15: Menghapus (DELETE)",
+                hasEditor: true,
+                setupDb: setupQuery,
+                defaultQuery: "SELECT * FROM Penelitian;",
+                content: `
+### Modul 15: Menghapus Baris
+
+Bila Anda perlu menghapus data dari tabel, Anda dapat menggunakan pernyataan **DELETE**.
+
+**Pernyataan Delete dengan kondisi**
+~~~sql
+DELETE FROM nama_tabel
+WHERE kondisi;
+~~~
+
+Jika Anda memutuskan untuk mengabaikan batasan WHERE, maka **semua baris akan dihapus**. Sangat mudah untuk menghapus data secara tidak sengaja, jadi berhati-hatilah ekstra.
+                `,
+                tasks: [
+                    { text: "Database ini semakin besar, mari hapus semua penelitian yang dirilis sebelum (Tahun &lt;) tahun 2025.", expected: "DELETE FROM Penelitian WHERE Tahun < 2025;" },
+                    { text: "Hapus juga penelitian aneh yang bernama 'Riset Masa Depan'.", expected: "DELETE FROM Penelitian WHERE Judul = 'Riset Masa Depan';" }
+                ]
+            },
+            {
+                id: "lesson16",
+                title: "Modul 16: Membuat Tabel (CREATE)",
+                hasEditor: true,
+                setupDb: "", 
+                defaultQuery: "-- Ketik kueri pembuatan tabel di sini",
+                content: `
+### Modul 16: Membuat Tabel
+
+Bila Anda memiliki entitas baru, Anda dapat membuat tabel database baru menggunakan pernyataan **CREATE TABLE**.
+
+**Pernyataan Create table**
+~~~sql
+CREATE TABLE IF NOT EXISTS tabel_saya (
+    kolom TipeData BatasanTabel,
+    kolom_lain TipeData BatasanTabel
+);
+~~~
+
+Tipe data yang umum mendukung numerik (INTEGER, FLOAT), string (VARCHAR, TEXT), dll.
+                `,
+                tasks: [
+                    { text: "Buat tabel baru bernama <code>Buku</code> dengan kolom: <code>Id</code> INTEGER, <code>Judul_Buku</code> TEXT, dan <code>Jumlah_Bab</code> INTEGER.", expected: "CREATE TABLE Buku (Id INTEGER, Judul_Buku TEXT, Jumlah_Bab INTEGER);" }
+                ]
+            },
+            {
+                id: "lesson17",
+                title: "Modul 17: Mengubah Tabel (ALTER)",
+                hasEditor: true,
+                setupDb: "CREATE TABLE Buku (Id INTEGER, Judul_Buku TEXT, Jumlah_Bab INTEGER);",
+                defaultQuery: "-- Lihat skema tabel di atas, lalu ubah tabelnya",
+                content: `
+### Modul 17: Mengubah Tabel
+
+SQL menyediakan cara bagi Anda untuk memperbarui skema tabel yang ada dengan menggunakan pernyataan **ALTER TABLE** untuk menambah, menghapus, atau mengubah kolom.
+
+**Menambahkan kolom**
+~~~sql
+ALTER TABLE nama_tabel
+ADD kolom TipeData;
+~~~
+
+*(Catatan: SQLite, database yang digunakan di browser ini, memiliki dukungan terbatas untuk ALTER TABLE selain menambah kolom).*
+                `,
+                tasks: [
+                    { text: "Tambahkan kolom bernama <code>Nama_Penerbit</code> dengan tipe data TEXT ke dalam tabel Buku.", expected: "ALTER TABLE Buku ADD Nama_Penerbit TEXT;" }
+                ]
+            },
+            {
+                id: "lesson18",
+                title: "Modul 18: Menghapus Tabel (DROP)",
+                hasEditor: true,
+                setupDb: "CREATE TABLE Buku (Id INTEGER, Judul TEXT); CREATE TABLE Penulis (Id INTEGER, Nama TEXT);",
+                defaultQuery: "SELECT * FROM Buku;",
+                content: `
+### Modul 18: Menghapus Tabel
+
+Dalam beberapa kasus, Anda mungkin ingin menghapus seluruh tabel termasuk semua data dan metadatanya, dan untuk melakukannya, Anda dapat menggunakan pernyataan **DROP TABLE**.
+
+Ini berbeda dari pernyataan DELETE karena DROP juga menghapus <i>skema</i> tabel dari database sepenuhnya.
+
+**Pernyataan Drop table**
+~~~sql
+DROP TABLE IF EXISTS tabel_saya;
+~~~
+                `,
+                tasks: [
+                    { text: "Kita telah mencapai akhir pelajaran! Mari bersihkan dengan menghapus tabel <code>Buku</code>", expected: "DROP TABLE Buku;" },
+                    { text: "Hapus juga tabel <code>Penulis</code>.", expected: "DROP TABLE Penulis;" }
+                ]
+            }
+        ];
+
+        // --- SISTEM INTI VALIDASI, UI & PROGRESSION ---
+        let db; 
+        let currentLessonIndex = 0;
+        let currentTaskIndex = 0;
+        
+        let maxUnlockedLessonIndex = parseInt(localStorage.getItem('dosenpx_sql_progress')) || 1;
+
+        initSqlJs({ locateFile: file => 'https://unpkg.com/sql.js@1.8.0/dist/' + file }).then(function(SQL){
+            window.SQL = SQL;
+            renderSidebar();
+            loadLesson(0);
+        }).catch(function(err){
+            document.getElementById("lesson-content").innerHTML = "<h3 style='color:red;'>Gagal memuat SQLite!</h3><p>" + err + "</p>";
+        });
+
+        function renderSidebar() {
+            const listEl = document.getElementById("lesson-list");
+            listEl.innerHTML = "";
+            lessons.forEach((lesson, index) => {
+                const isLocked = index > maxUnlockedLessonIndex;
+                const li = document.createElement("li");
+                
+                li.className = "lesson-item " + 
+                               (index === currentLessonIndex ? "active " : "") + 
+                               (isLocked ? "locked" : "");
+                               
+                li.innerHTML = isLocked ? '<span class="lock-icon">🔒</span> ' + lesson.title : lesson.title;
+                
+                li.onclick = () => {
+                    if (isLocked) {
+                        alert("Selesaikan modul sebelumnya terlebih dahulu untuk membuka modul ini!");
+                    } else {
+                        loadLesson(index);
+                    }
+                };
+                listEl.appendChild(li);
+            });
+        }
+
+        function loadLesson(index) {
+            currentLessonIndex = index;
+            const lesson = lessons[index];
+            currentTaskIndex = 0;
+            
+            document.getElementById("lesson-content").innerHTML = marked.parse(lesson.content);
+            
+            const interactiveEl = document.getElementById("interactive-wrapper");
+            if(lesson.hasEditor) {
+                interactiveEl.style.display = "flex";
+                document.getElementById("success-banner").style.display = "none";
+                
+                db = new window.SQL.Database();
+                if(lesson.setupDb) db.run(lesson.setupDb);
+                
+                document.getElementById("sql-input").value = lesson.defaultQuery || "";
+                renderTasks();
+                
+                if (lesson.defaultQuery.toUpperCase().indexOf("SELECT") !== -1) {
+                    runQuery(); 
+                } else {
+                    document.getElementById("result-area").innerHTML = "";
+                }
+            } else {
+                interactiveEl.style.display = "none";
+            }
+            renderSidebar();
+        }
+
+        function renderTasks() {
+            const lesson = lessons[currentLessonIndex];
+            const listEl = document.getElementById("task-list");
+            listEl.innerHTML = "";
+            
+            if(!lesson.tasks) return;
+
+            lesson.tasks.forEach((task, i) => {
+                const li = document.createElement("li");
+                li.className = "task-item";
+                
+                if (i < currentTaskIndex) li.classList.add("done");
+                else if (i === currentTaskIndex) li.classList.add("active");
+
+                li.innerHTML = task.text;
+                listEl.appendChild(li);
+            });
+
+            if(currentTaskIndex >= lesson.tasks.length) {
+                document.getElementById("success-banner").style.display = "block";
+                unlockNextLesson();
+            }
+        }
+
+        function runQuery() {
+            const query = document.getElementById("sql-input").value;
+            const resultArea = document.getElementById("result-area");
+            
+            try {
+                const res = db.exec(query);
+                
+                if (res.length > 0) {
+                    renderTable(res, resultArea);
+                } else {
+                    resultArea.innerHTML = "<div class='success-msg'>✓ Sukses dieksekusi (Kueri manipulasi / Data kosong).</div>";
+                }
+                
+                validateTask(res, query);
+            } catch (err) {
+                resultArea.innerHTML = "<div class='error-msg'>✖ Error: " + err.message + "</div>";
+            }
+        }
+
+        function renderTable(resRaw, container) {
+            let html = "<table><tr>";
+            resRaw[0].columns.forEach(col => { html += "<th>" + col + "</th>"; });
+            html += "</tr>";
+            resRaw[0].values.forEach(row => {
+                html += "<tr>";
+                row.forEach(val => { html += "<td>" + (val === null ? "<i style='color:#94a3b8'>NULL</i>" : val) + "</td>"; });
+                html += "</tr>";
+            });
+            html += "</table>";
+            container.innerHTML = html;
+        }
+
+        function validateTask(userResRaw, userQuery) {
+            const lesson = lessons[currentLessonIndex];
+            if(!lesson.tasks || currentTaskIndex >= lesson.tasks.length) return;
+
+            const expectedQuery = lesson.tasks[currentTaskIndex].expected;
+            let isCorrect = false;
+
+            const actionType = expectedQuery.trim().toUpperCase().split(" ")[0];
+            
+            if (actionType === "SELECT") {
+                const shadowDb = new window.SQL.Database();
+                if(lesson.setupDb) shadowDb.run(lesson.setupDb);
+                
+                try {
+                    const expectedResRaw = shadowDb.exec(expectedQuery);
+                    if (JSON.stringify(userResRaw) === JSON.stringify(expectedResRaw)) {
+                        isCorrect = true;
+                    }
+                } catch(e) { console.log(e); }
+                
+            } else {
+                const userQClean = userQuery.replace(/\s+/g, " ").trim().toLowerCase();
+                const expQClean = expectedQuery.replace(/\s+/g, " ").trim().toLowerCase();
+                if (userQClean.replace(/;$/, '') === expQClean.replace(/;$/, '')) {
+                     isCorrect = true;
+                }
+            }
+
+            if (isCorrect) {
+                currentTaskIndex++; 
+                renderTasks(); 
+            }
+        }
+
+        function unlockNextLesson() {
+            if (currentLessonIndex + 1 > maxUnlockedLessonIndex) {
+                maxUnlockedLessonIndex = currentLessonIndex + 1;
+                localStorage.setItem('dosenpx_sql_progress', maxUnlockedLessonIndex);
+                renderSidebar(); 
+            }
+        }
+
+        function nextLesson() {
+            if(currentLessonIndex + 1 < lessons.length) {
+                loadLesson(currentLessonIndex + 1);
+            } else {
+                alert("Selamat! Anda telah menyelesaikan seluruh modul pembelajaran ini.");
+            }
+        }
+
+        function resetProgress() {
+            if(confirm("Apakah Anda yakin ingin mereset semua progres belajar?")) {
+                maxUnlockedLessonIndex = 1;
+                localStorage.setItem('dosenpx_sql_progress', maxUnlockedLessonIndex);
+                loadLesson(0);
+            }
+        }
+    </script>
+</body>
+</html>
