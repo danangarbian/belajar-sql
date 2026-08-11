@@ -3,349 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platform Pembelajaran SQL</title>
-    <!-- Include sql.js for in-browser SQL execution -->
+    <title>Platform Pembelajaran SQL - DosenPX</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-    <!-- Include marked.js for parsing Markdown to HTML -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --primary-color: #0366d6;
+            --success-color: #28a745;
             --bg-color: #f6f8fa;
             --border-color: #e1e4e8;
             --text-color: #24292e;
-            --sidebar-width: 280px;
+            --sidebar-width: 250px;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            color: var(--text-color);
-            background-color: #fff;
-        }
-
-        /* Sidebar Styling */
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--bg-color);
-            border-right: 1px solid var(--border-color);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            font-weight: 600;
-            font-size: 1.1em;
-        }
-
-        .lesson-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .lesson-item {
-            padding: 12px 20px;
-            border-bottom: 1px solid #eaecef;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-size: 0.95em;
-        }
-
-        .lesson-item:hover {
-            background-color: #e1e4e8;
-        }
-
-        .lesson-item.active {
-            background-color: #e1e4e8;
-            border-left: 4px solid var(--primary-color);
-            font-weight: 600;
-        }
-
-        /* Main Content Area */
-        .main-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .content-area {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* Markdown Styles */
-        .content-area h1, .content-area h2, .content-area h3 {
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.3em;
-            margin-top: 24px;
-            margin-bottom: 16px;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; margin: 0; display: flex; height: 100vh; color: var(--text-color); }
         
-        .content-area table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 20px;
-        }
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-width); background-color: var(--bg-color); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; }
+        .lesson-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; }
+        .lesson-item { padding: 12px 20px; border-bottom: 1px solid #eaecef; cursor: pointer; font-size: 0.9em; }
+        .lesson-item:hover { background-color: #e1e4e8; }
+        .lesson-item.active { background-color: #e1e4e8; border-left: 4px solid var(--primary-color); font-weight: bold; }
+
+        /* Main Content */
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #fff;}
+        .content-area { flex: 1; padding: 30px 40px; overflow-y: auto; line-height: 1.6; }
+        .content-area table { border-collapse: collapse; width: 100%; margin-bottom: 20px; font-size: 14px;}
+        .content-area th, .content-area td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
+        .content-area th { background-color: var(--bg-color); }
         
-        .content-area th, .content-area td {
-            border: 1px solid var(--border-color);
-            padding: 8px 12px;
-            text-align: left;
-        }
+        /* Interactive Area Split (Editor + Tasks) */
+        .interactive-wrapper { display: flex; border-top: 2px solid var(--border-color); height: 320px; background: #fafbfc;}
         
-        .content-area th {
-            background-color: var(--bg-color);
-        }
-
-        /* Interactive Editor Area */
-        .editor-container {
-            height: 300px;
-            background-color: var(--bg-color);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .editor-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        #sql-input {
-            flex: 1;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            resize: none;
-            margin-bottom: 10px;
-        }
-
-        .controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        button {
-            background-color: #2ea44f;
-            color: white;
-            border: 1px solid rgba(27,31,35,0.15);
-            padding: 5px 16px;
-            font-size: 14px;
-            font-weight: 500;
-            line-height: 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        button:hover {
-            background-color: #2c974b;
-        }
-
-        /* Results Area */
-        #result-area {
-            max-height: 150px;
-            overflow-y: auto;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 10px;
-        }
+        .editor-container { flex: 2; display: flex; flex-direction: column; padding: 15px; border-right: 1px solid var(--border-color); }
+        #sql-input { flex: 1; font-family: 'Courier New', Courier, monospace; font-size: 15px; padding: 12px; border: 1px solid #ccc; border-radius: 4px; resize: none; margin-bottom: 10px; background: #fff;}
+        #sql-input:focus { outline: none; border-color: var(--primary-color); }
         
-        #result-area table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        #result-area th, #result-area td {
-            border: 1px solid var(--border-color);
-            padding: 6px 12px;
-            text-align: left;
-            font-size: 13px;
-        }
+        .result-wrapper { height: 130px; overflow-y: auto; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; }
+        .result-wrapper table { border-collapse: collapse; width: 100%; font-size: 13px;}
+        .result-wrapper th, .result-wrapper td { border: 1px solid #eee; padding: 5px 8px; text-align: left; }
+        .result-wrapper th { background-color: #f1f1f1; }
+        .error-msg { color: #d73a49; font-family: monospace; font-size: 13px; }
 
-        .error-msg {
-            color: #cb2431;
-            font-family: monospace;
-            margin: 0;
-            font-size: 13px;
-        }
+        /* Task Panel */
+        .tasks-panel { flex: 1; padding: 15px; overflow-y: auto; background: #f1f3f5; }
+        .tasks-panel h4 { margin-top: 0; color: #555; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .task-list { list-style: none; padding: 0; margin: 0; counter-reset: task-counter; }
+        .task-item { margin-bottom: 12px; font-size: 13.5px; display: flex; align-items: flex-start; color: #666; transition: 0.3s;}
+        
+        /* Task States */
+        .task-item::before { counter-increment: task-counter; content: counter(task-counter) ". "; font-weight: bold; margin-right: 8px; }
+        .task-item.active { color: #000; font-weight: 500; }
+        .task-item.done { color: #aaa; text-decoration: line-through; }
+        .task-item.done::before { content: "✓ "; color: var(--success-color); }
+        
+        .btn-run { background: var(--primary-color); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; float: right;}
+        .btn-run:hover { background: #005cc5; }
+        
+        .success-banner { display: none; background: #d4edda; color: #155724; padding: 10px; text-align: center; font-weight: bold; border-radius: 4px; margin-top: 15px;}
     </style>
 </head>
 <body>
 
-    <!-- Sidebar -->
     <div class="sidebar">
-        <div class="sidebar-header">
-            Daftar Modul
-        </div>
-        <ul class="lesson-list" id="lesson-list">
-            <!-- Lesson items will be injected here by JS -->
-        </ul>
+        <div class="sidebar-header">Daftar Modul</div>
+        <ul class="lesson-list" id="lesson-list"></ul>
     </div>
 
-    <!-- Main Content -->
     <div class="main-container">
-        <!-- Theory Area -->
-        <div class="content-area" id="lesson-content">
-            Loading content...
-        </div>
+        <div class="content-area" id="lesson-content">Loading...</div>
 
         <!-- Interactive Area -->
-        <div class="editor-container" id="editor-container" style="display: none;">
-            <div class="editor-header">
-                <strong>SQL Editor</strong>
-                <button onclick="runQuery()">▶ Jalankan Kueri</button>
+        <div class="interactive-wrapper" id="interactive-wrapper" style="display: none;">
+            <!-- Left: Editor & Result -->
+            <div class="editor-container">
+                <div style="margin-bottom: 10px; overflow: hidden;">
+                    <strong style="font-size: 14px; color: #555;">SQL Editor</strong>
+                    <button class="btn-run" onclick="runQuery()">▶ Jalankan Kueri</button>
+                </div>
+                <textarea id="sql-input" spellcheck="false"></textarea>
+                <div class="result-wrapper" id="result-area"></div>
             </div>
-            <textarea id="sql-input" spellcheck="false">SELECT * FROM Vehicles;</textarea>
-            <div id="result-area"></div>
+            
+            <!-- Right: Task Validator -->
+            <div class="tasks-panel">
+                <h4>Latihan - Tugas</h4>
+                <ul class="task-list" id="task-list"></ul>
+                <div class="success-banner" id="success-banner">
+                    🎉 Luar Biasa! Semua tugas selesai.<br>
+                    <button style="margin-top: 10px; cursor:pointer;" onclick="nextLesson()">Lanjut ke Modul Berikutnya >></button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- DATASET MATERI ---
+        // --- DATASET & MATERI ---
         const lessons = [
             {
                 id: "intro",
                 title: "Pengantar SQL",
-                hasEditor: false, 
+                hasEditor: false,
                 content: `
 ### Pengantar SQL
 
-Selamat datang! Ini adalah rangkaian pelajaran dan latihan interaktif yang dirancang untuk membantu Anda belajar SQL dengan cepat, langsung di dalam browser Anda.
+Selamat datang! Ini adalah platform pembelajaran interaktif yang dirancang untuk membantu Anda belajar database secara langsung.
 
-#### Apa itu SQL?
-SQL, atau *Structured Query Language*, adalah bahasa yang dirancang untuk memungkinkan pengguna teknis maupun non-teknis melakukan kueri, memanipulasi, dan mentransformasi data dari sebuah database relasional. Karena kesederhanaannya, database SQL menyediakan penyimpanan yang aman dan terukur untuk jutaan situs web dan aplikasi seluler.
-
-**Tahukah Anda?**
-Ada banyak database SQL populer termasuk SQLite, MySQL, Postgres, Oracle, dan Microsoft SQL Server. Semuanya mendukung standar bahasa SQL secara umum, yang merupakan materi yang akan diajarkan di situs ini. Namun, setiap implementasi bisa saja berbeda dalam hal fitur tambahan dan jenis penyimpanan yang didukungnya.
-
-#### Database Relasional
-Sebelum mempelajari sintaks SQL, penting untuk memiliki gambaran mengenai apa sebenarnya database relasional itu. Database relasional merepresentasikan kumpulan tabel (dua dimensi) yang saling terkait. Setiap tabel mirip dengan lembar kerja (*spreadsheet*) Excel, dengan jumlah kolom bernama yang tetap (atribut atau properti dari tabel) dan jumlah baris data berapa pun.
-
-Sebagai contoh, jika sebuah Departemen Kendaraan Bermotor memiliki database, Anda mungkin akan menemukan tabel yang berisi semua kendaraan yang digunakan oleh masyarakat. Tabel ini misalnya perlu menyimpan nama model, jenis, jumlah roda, dan jumlah pintu dari setiap kendaraan.
-
-**Tabel: Kendaraan (Vehicles)**
-
-| Id | Merk/Model | Jumlah Roda | Jumlah Pintu | Tipe |
-| :--- | :--- | :--- | :--- | :--- |
-| 1 | Ford Focus | 4 | 4 | Sedan |
-| 2 | Tesla Roadster | 4 | 2 | Sports |
-| 3 | Kawakasi Ninja | 2 | 0 | Motorcycle |
-| 4 | McLaren Formula 1 | 4 | 0 | Race |
-| 5 | Tesla S | 4 | 4 | Sedan |
-
-Di dalam database semacam itu, Anda mungkin akan menemukan tabel terkait tambahan yang berisi informasi seperti daftar semua pengemudi terdaftar, jenis SIM yang dapat diberikan, atau bahkan data pelanggaran mengemudi untuk setiap orang.
-
-Melalui pembelajaran SQL ini, tujuannya adalah agar Anda bisa menjawab pertanyaan-pertanyaan spesifik mengenai data tersebut, seperti "Jenis kendaraan apa saja di jalan yang memiliki kurang dari empat roda?", atau "Berapa banyak model mobil yang diproduksi Tesla?", untuk membantu kita membuat keputusan yang lebih baik ke depannya.
-
-#### Tentang Pelajaran Ini
-Karena sebagian besar pengguna akan mempelajari SQL untuk berinteraksi dengan database yang sudah ada, pelajaran akan dimulai dengan memperkenalkan Anda pada berbagai bagian penyusun kueri SQL. Pelajaran selanjutnya kemudian akan menunjukkan kepada Anda cara memodifikasi tabel (atau skema) dan membuat tabel baru dari awal.
-
-Setiap pelajaran akan memperkenalkan konsep yang berbeda dan diakhiri dengan latihan interaktif. Belajarlah sesuai dengan kecepatan Anda sendiri dan jangan takut untuk meluangkan waktu bereksperimen dengan latihan-latihan ini sebelum melanjutkan ke materi berikutnya!
+*(Silakan klik modul selanjutnya di sidebar kiri untuk mulai menulis kueri pertama Anda!)*
                 `
+            },
+            {
+                id: "lesson1",
+                title: "Pel. 1: Dasar Kueri SELECT",
+                hasEditor: true,
+                setupDb: "CREATE TABLE Penelitian (Id int, Judul varchar, Ketua_Peneliti varchar, Tahun int, Durasi_Bulan int); INSERT INTO Penelitian VALUES (1, 'Deteksi Wajah Multi-Face YOLOv8', 'Dr. D', 2025, 6), (2, 'Mesin Translasi Low-Resource', 'Dr. D', 2026, 12), (3, 'NLP untuk Austronesian Language', 'Prof. Aji', 2025, 24), (4, 'Text to Video Inklusi Sosial', 'Dr. Alhashemi', 2026, 8), (5, 'Pengembangan Sistem PINTAS', 'Dr. D', 2025, 10);",
+                defaultQuery: "SELECT * FROM Penelitian;",
+                content: `
+### Pelajaran 1: Dasar Kueri SELECT
+
+Untuk mengambil data dari database SQL, kita perlu menulis pernyataan **SELECT**, yang sering disebut sebagai *kueri* (query). Kueri pada dasarnya adalah pernyataan yang mendeklarasikan data apa yang kita cari, di mana menemukannya, dan bagaimana mentransformasikannya sebelum dikembalikan kepada kita.
+
+Bayangkan sebuah **Tabel** dalam SQL sebagai suatu entitas (misalnya: *Penelitian*), dan setiap baris (row) dalam tabel tersebut adalah contoh spesifik dari entitas itu. Kolom (column) mewakili properti umum yang dimiliki oleh entitas tersebut (misal: *Judul, Tahun, Peneliti*).
+
+Kueri paling dasar yang bisa kita tulis adalah kueri yang memilih beberapa kolom dari sebuah tabel:
+
+**Kueri memilih kolom tertentu:**
+\`\`\`sql
+SELECT kolom1, kolom2 FROM nama_tabel;
+\`\`\`
+
+Jika kita ingin mengambil *semua* kolom dari sebuah tabel, kita dapat menggunakan simbol bintang (\`*\`) sebagai pengganti penulisan nama kolom satu per satu.
+
+**Kueri memilih semua kolom:**
+\`\`\`sql
+SELECT * FROM nama_tabel;
+\`\`\`
+
+---
+#### 💻 Latihan Interaktif
+Kita akan menggunakan database berisi data **Penelitian Kampus**. Tabel yang digunakan bernama \`Penelitian\`. 
+Silakan ubah kueri di editor bawah untuk menyelesaikan tugas-tugas di panel sebelah kanan!
+
+**Tabel: Penelitian**
+| Id | Judul | Ketua_Peneliti | Tahun | Durasi_Bulan |
+|---|---|---|---|---|
+| 1 | Deteksi Wajah Multi-Face YOLOv8 | Dr. D | 2025 | 6 |
+| 2 | Mesin Translasi Low-Resource | Dr. D | 2026 | 12 |
+| 3 | NLP untuk Austronesian Language | Prof. Aji | 2025 | 24 |
+| 4 | Text to Video Inklusi Sosial | Dr. Alhashemi | 2026 | 8 |
+| 5 | Pengembangan Sistem PINTAS | Dr. D | 2025 | 10 |
+                `,
+                // Daftar validasi soal dan kunci jawaban
+                tasks: [
+                    { text: "Temukan judul (Judul) dari setiap penelitian", expected: "SELECT Judul FROM Penelitian;" },
+                    { text: "Temukan ketua peneliti (Ketua_Peneliti) dari setiap penelitian", expected: "SELECT Ketua_Peneliti FROM Penelitian;" },
+                    { text: "Temukan judul dan ketua peneliti dari setiap penelitian", expected: "SELECT Judul, Ketua_Peneliti FROM Penelitian;" },
+                    { text: "Temukan judul dan tahun (Tahun) dari setiap penelitian", expected: "SELECT Judul, Tahun FROM Penelitian;" },
+                    { text: "Temukan semua informasi tentang setiap penelitian", expected: "SELECT * FROM Penelitian;" }
+                ]
             }
         ];
 
-        // --- INISIALISASI APLIKASI ---
+        // --- SISTEM INTI ---
         let db; 
-        let currentLessonId = "intro";
+        let currentLessonIndex = 0;
+        let currentTaskIndex = 0;
 
-        // 1. Setup SQLite via WebAssembly
+        // Inisialisasi SQL Wasm
         initSqlJs({ locateFile: file => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/' + file }).then(function(SQL){
-            db = new SQL.Database();
-            setupDatabaseSchema();
+            window.SQL = SQL;
             renderSidebar();
-            loadLesson(currentLessonId);
+            loadLesson(0);
         });
 
-        // 2. Buat Skema Database Awal 
-        function setupDatabaseSchema() {
-            db.run("CREATE TABLE Vehicles (Id int, MerkModel varchar, Roda int, Pintu int, Tipe varchar);");
-            db.run("INSERT INTO Vehicles VALUES (1, 'Ford Focus', 4, 4, 'Sedan'), (2, 'Tesla Roadster', 4, 2, 'Sports'), (3, 'Kawakasi Ninja', 2, 0, 'Motorcycle'), (4, 'McLaren Formula 1', 4, 0, 'Race'), (5, 'Tesla S', 4, 4, 'Sedan');");
-        }
-
-        // 3. Render Daftar Modul di Sidebar
         function renderSidebar() {
             const listEl = document.getElementById("lesson-list");
             listEl.innerHTML = "";
-            lessons.forEach(lesson => {
+            lessons.forEach((lesson, index) => {
                 const li = document.createElement("li");
-                li.className = "lesson-item " + (lesson.id === currentLessonId ? "active" : "");
+                li.className = "lesson-item " + (index === currentLessonIndex ? "active" : "");
                 li.innerText = lesson.title;
-                li.onclick = () => loadLesson(lesson.id);
+                li.onclick = () => loadLesson(index);
                 listEl.appendChild(li);
             });
         }
 
-        // 4. Muat Konten Pelajaran yang Dipilih
-        function loadLesson(id) {
-            currentLessonId = id;
-            const lesson = lessons.find(l => l.id === id);
+        function loadLesson(index) {
+            currentLessonIndex = index;
+            const lesson = lessons[index];
+            currentTaskIndex = 0;
             
-            // Render Markdown ke HTML
+            // Render Konten Markdown
             document.getElementById("lesson-content").innerHTML = marked.parse(lesson.content);
             
-            // Tampilkan/Sembunyikan Editor SQL
-            const editorEl = document.getElementById("editor-container");
+            const interactiveEl = document.getElementById("interactive-wrapper");
             if(lesson.hasEditor) {
-                editorEl.style.display = "flex";
-                document.getElementById("result-area").innerHTML = ""; 
+                interactiveEl.style.display = "flex";
+                document.getElementById("success-banner").style.display = "none";
+                
+                // Buat ulang database agar data bersih tiap pelajaran
+                db = new window.SQL.Database();
+                if(lesson.setupDb) db.run(lesson.setupDb);
+                
+                document.getElementById("sql-input").value = lesson.defaultQuery || "";
+                renderTasks();
+                runQuery(); // Jalankan kueri default
             } else {
-                editorEl.style.display = "none";
+                interactiveEl.style.display = "none";
             }
-
-            // Update UI Sidebar
-            document.querySelectorAll('.lesson-item').forEach(el => el.classList.remove('active'));
-            const activeLi = Array.from(document.querySelectorAll('.lesson-item')).find(el => el.innerText === lesson.title);
-            if(activeLi) activeLi.classList.add('active');
+            renderSidebar();
         }
 
-        // 5. Fungsi Eksekusi Kueri SQL
+        function renderTasks() {
+            const lesson = lessons[currentLessonIndex];
+            const listEl = document.getElementById("task-list");
+            listEl.innerHTML = "";
+            
+            if(!lesson.tasks) return;
+
+            lesson.tasks.forEach((task, i) => {
+                const li = document.createElement("li");
+                li.className = "task-item";
+                
+                // Logika status UI soal
+                if (i < currentTaskIndex) li.classList.add("done");
+                else if (i === currentTaskIndex) li.classList.add("active");
+                else li.style.color = "#ccc"; // Soal yang belum bisa diakses
+
+                // Highlight nama kolom pakai backtick
+                let taskText = task.text.replace(/([a-zA-Z_]+)/g, "<code>$1</code>");
+                li.innerHTML = task.text;
+                listEl.appendChild(li);
+            });
+
+            // Jika semua soal selesai
+            if(currentTaskIndex >= lesson.tasks.length) {
+                document.getElementById("success-banner").style.display = "block";
+            }
+        }
+
         function runQuery() {
             const query = document.getElementById("sql-input").value;
             const resultArea = document.getElementById("result-area");
             
             try {
+                // Eksekusi kueri mahasiswa
                 const res = db.exec(query);
-                if (res.length > 0) {
-                    let tableHTML = "<table><tr>";
-                    // Header
-                    res[0].columns.forEach(col => { tableHTML += "<th>" + col + "</th>"; });
-                    tableHTML += "</tr>";
-                    // Data Rows
-                    res[0].values.forEach(row => {
-                        tableHTML += "<tr>";
-                        row.forEach(val => { tableHTML += "<td>" + val + "</td>"; });
-                        tableHTML += "</tr>";
-                    });
-                    tableHTML += "</table>";
-                    resultArea.innerHTML = tableHTML;
-                } else {
-                    resultArea.innerHTML = "<p class='error-msg'>Sukses dieksekusi, tapi tidak ada baris yang dikembalikan.</p>";
-                }
+                renderTable(res, resultArea);
+                
+                // Cek kebenaran kueri
+                validateTask(res);
             } catch (err) {
                 resultArea.innerHTML = "<p class='error-msg'>Error: " + err.message + "</p>";
+            }
+        }
+
+        function renderTable(resRaw, container) {
+            if (resRaw.length > 0) {
+                let html = "<table><tr>";
+                resRaw[0].columns.forEach(col => { html += "<th>" + col + "</th>"; });
+                html += "</tr>";
+                resRaw[0].values.forEach(row => {
+                    html += "<tr>";
+                    row.forEach(val => { html += "<td>" + val + "</td>"; });
+                    html += "</tr>";
+                });
+                html += "</table>";
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = "<p class='error-msg'>Kueri berhasil, namun data kosong.</p>";
+            }
+        }
+
+        function validateTask(userResRaw) {
+            const lesson = lessons[currentLessonIndex];
+            if(!lesson.tasks || currentTaskIndex >= lesson.tasks.length) return;
+
+            // Eksekusi kunci jawaban secara rahasia di background
+            const expectedQuery = lesson.tasks[currentTaskIndex].expected;
+            let expectedResRaw = [];
+            try { expectedResRaw = db.exec(expectedQuery); } catch(e) {}
+
+            // Bandingkan output JSON hasil mahasiswa vs hasil kunci jawaban
+            if (JSON.stringify(userResRaw) === JSON.stringify(expectedResRaw)) {
+                currentTaskIndex++; // Lolos! Buka soal berikutnya
+                renderTasks(); // Render ulang UI tugas
+            }
+        }
+
+        function nextLesson() {
+            if(currentLessonIndex + 1 < lessons.length) {
+                loadLesson(currentLessonIndex + 1);
+            } else {
+                alert("Ini adalah modul terakhir saat ini!");
             }
         }
     </script>
