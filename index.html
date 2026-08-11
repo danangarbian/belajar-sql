@@ -224,12 +224,11 @@
 
     <script>
         // --- DATASET MATERI ---
-        // Ini adalah "database" soal kita. Tambahkan materi baru di array ini.
         const lessons = [
             {
                 id: "intro",
                 title: "Pengantar SQL",
-                hasEditor: false, // Halaman intro tidak butuh editor interaktif
+                hasEditor: false, 
                 content: `
 ### Pengantar SQL
 
@@ -269,18 +268,18 @@ Setiap pelajaran akan memperkenalkan konsep yang berbeda dan diakhiri dengan lat
         ];
 
         // --- INISIALISASI APLIKASI ---
-        let db; // Objek database SQLite virtual
+        let db; 
         let currentLessonId = "intro";
 
         // 1. Setup SQLite via WebAssembly
-        initSqlJs({ locateFile: file => \`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/\${file}\` }).then(function(SQL){
+        initSqlJs({ locateFile: file => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/' + file }).then(function(SQL){
             db = new SQL.Database();
             setupDatabaseSchema();
             renderSidebar();
             loadLesson(currentLessonId);
         });
 
-        // 2. Buat Skema Database Awal (Tersembunyi dari user)
+        // 2. Buat Skema Database Awal 
         function setupDatabaseSchema() {
             db.run("CREATE TABLE Vehicles (Id int, MerkModel varchar, Roda int, Pintu int, Tipe varchar);");
             db.run("INSERT INTO Vehicles VALUES (1, 'Ford Focus', 4, 4, 'Sedan'), (2, 'Tesla Roadster', 4, 2, 'Sports'), (3, 'Kawakasi Ninja', 2, 0, 'Motorcycle'), (4, 'McLaren Formula 1', 4, 0, 'Race'), (5, 'Tesla S', 4, 4, 'Sedan');");
@@ -292,7 +291,7 @@ Setiap pelajaran akan memperkenalkan konsep yang berbeda dan diakhiri dengan lat
             listEl.innerHTML = "";
             lessons.forEach(lesson => {
                 const li = document.createElement("li");
-                li.className = \`lesson-item \${lesson.id === currentLessonId ? 'active' : ''}\`;
+                li.className = "lesson-item " + (lesson.id === currentLessonId ? "active" : "");
                 li.innerText = lesson.title;
                 li.onclick = () => loadLesson(lesson.id);
                 listEl.appendChild(li);
@@ -304,14 +303,14 @@ Setiap pelajaran akan memperkenalkan konsep yang berbeda dan diakhiri dengan lat
             currentLessonId = id;
             const lesson = lessons.find(l => l.id === id);
             
-            // Render Markdown ke HTML menggunakan marked.js
+            // Render Markdown ke HTML
             document.getElementById("lesson-content").innerHTML = marked.parse(lesson.content);
             
             // Tampilkan/Sembunyikan Editor SQL
             const editorEl = document.getElementById("editor-container");
             if(lesson.hasEditor) {
                 editorEl.style.display = "flex";
-                document.getElementById("result-area").innerHTML = ""; // reset hasil
+                document.getElementById("result-area").innerHTML = ""; 
             } else {
                 editorEl.style.display = "none";
             }
@@ -332,12 +331,12 @@ Setiap pelajaran akan memperkenalkan konsep yang berbeda dan diakhiri dengan lat
                 if (res.length > 0) {
                     let tableHTML = "<table><tr>";
                     // Header
-                    res[0].columns.forEach(col => { tableHTML += \`<th>\${col}</th>\`; });
+                    res[0].columns.forEach(col => { tableHTML += "<th>" + col + "</th>"; });
                     tableHTML += "</tr>";
                     // Data Rows
                     res[0].values.forEach(row => {
                         tableHTML += "<tr>";
-                        row.forEach(val => { tableHTML += \`<td>\${val}</td>\`; });
+                        row.forEach(val => { tableHTML += "<td>" + val + "</td>"; });
                         tableHTML += "</tr>";
                     });
                     tableHTML += "</table>";
@@ -346,7 +345,7 @@ Setiap pelajaran akan memperkenalkan konsep yang berbeda dan diakhiri dengan lat
                     resultArea.innerHTML = "<p class='error-msg'>Sukses dieksekusi, tapi tidak ada baris yang dikembalikan.</p>";
                 }
             } catch (err) {
-                resultArea.innerHTML = \`<p class="error-msg">Error: \${err.message}</p>\`;
+                resultArea.innerHTML = "<p class='error-msg'>Error: " + err.message + "</p>";
             }
         }
     </script>
