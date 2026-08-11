@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Belajar SQL</title>
+    <!-- Memanggil library sql.js agar SQL bisa jalan di browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; display: flex; margin: 0; height: 100vh; color: #333; }
+        
+        /* Sidebar Mirip SQLBolt */
+        .sidebar { width: 250px; background-color: #f8f9fa; padding: 20px; border-right: 1px solid #ddd; overflow-y: auto; }
+        .sidebar h3 { font-size: 16px; color: #555; }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar li { padding: 10px 0; font-size: 14px; cursor: pointer; color: #007bff; }
+        .sidebar li:hover { text-decoration: underline; }
+        
+        /* Area Konten Utama */
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; }
+        .lesson-text { margin-bottom: 20px; line-height: 1.6; }
+        
+        /* Area Editor & Hasil (Interactive) */
+        .interactive-area { background: #f1f3f5; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; }
+        textarea { width: 100%; height: 80px; font-family: 'Courier New', Courier, monospace; font-size: 16px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; box-sizing: border-box; }
+        button { background-color: #28a745; color: white; border: none; padding: 10px 20px; margin-top: 10px; font-size: 14px; border-radius: 4px; cursor: pointer; font-weight: bold;}
+        button:hover { background-color: #218838; }
+        
+        /* Tabel Hasil Query */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
+        th { background-color: #e9ecef; }
+        .error { color: #dc3545; margin-top: 10px; font-size: 14px; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h3>Daftar Pelajaran</h3>
+        <ul>
+            <li>Introduction to SQL</li>
+            <li>Lesson 1: SELECT queries 101</li>
+            <li>Lesson 2: Constraints (WHERE)</li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="lesson-text">
+            <h1>Introduction to SQL</h1>
+            <p>Selamat datang di latihan interaktif. SQL digunakan untuk memanipulasi dan mengekstrak data dari database relasional.</p>
+            <h3>Tabel: Kendaraan (Vehicles)</h3>
+            <p>Di bawah ini adalah struktur tabel contoh. Silakan modifikasi query SQL di kolom bawah lalu klik "Run Query" untuk melihat hasilnya!</p>
+        </div>
+
+        <div class="interactive-area">
+            <textarea id="sql-input">SELECT * FROM Vehicles;</textarea>
+            <br>
+            <button onclick="executeSQL()">▶ Run Query</button>
+            <div id="error-msg" class="error"></div>
+            <div id="result-table"></div>
+        </div>
+    </div>
+
+    <script>
+        let db;
+        // Inisialisasi Database Virtual di Browser
+        initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` }).then(function(SQL){
+            db = new SQL.Database();
+            
+            // Membuat tabel dan data dummy di background
+            db.run("CREATE TABLE Vehicles (Id int, Merk varchar, Roda int, Tipe varchar);");
+            db.run("INSERT INTO Vehicles VALUES (1, 'Toyota Avanza', 4, 'MPV'), (2, 'Honda Beat', 2, 'Motor'), (3, 'Hino Dutro', 6, 'Truk');");
+            
+            // Jalankan query pertama secara otomatis
+            executeSQL();
+        });
+
+        // Fungsi untuk menangkap teks SQL dan mengeksekusinya
+        function executeSQL() {
+            const query = document.getElementById("sql-input").value;
+            const errorDiv = document.getElementById("error-msg");
+            const resultDiv = document.getElementById("result-table");
+            
+            errorDiv.innerHTML = "";
+            resultDiv.innerHTML = "";
+
+            try {
+                // Eksekusi sintaks SQL
+                const res = db.exec(query);
+                if (res.length > 0) {
+                    let tableHTML = "<table><tr>";
+                    // Cetak Header Tabel
+                    res[0].columns.forEach(col => { tableHTML += `<th>${col}</th>`; });
+                    tableHTML += "</tr>";
+                    // Cetak Isi Data (Rows)
+                    res[0].values.forEach(row => {
+                        tableHTML += "<tr>";
+                        row.forEach(val => { tableHTML += `<td>${val}</td>`; });
+                        tableHTML += "</tr>";
+                    });
+                    tableHTML += "</table>";
+                    resultDiv.innerHTML = tableHTML;
+                } else {
+                    resultDiv.innerHTML = "<p>Data kosong atau query tidak mengembalikan hasil.</p>";
+                }
+            } catch (err) {
+                // Tangkap error jika peserta salah ketik query
+                errorDiv.innerHTML = "Error sintaks: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
